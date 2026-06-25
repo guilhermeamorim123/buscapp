@@ -3,6 +3,10 @@ import type { ProductInfo, PriceInfo, MarketInfo, InvestmentInfo, Verdict, Simil
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
+function extractJson(text: string): string {
+  return text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim()
+}
+
 export async function identifyProduct(imageBase64: string): Promise<ProductInfo> {
   const response = await client.messages.create({
     model: 'claude-sonnet-4-6',
@@ -24,7 +28,7 @@ export async function identifyProduct(imageBase64: string): Promise<ProductInfo>
   })
 
   const text = response.content[0].type === 'text' ? response.content[0].text : ''
-  return JSON.parse(text) as ProductInfo
+  return JSON.parse(extractJson(text)) as ProductInfo
 }
 
 export async function synthesizeReport(
@@ -86,5 +90,5 @@ Se não houver dados suficientes para algum campo numérico, use 0. Sempre retor
   })
 
   const text = response.content[0].type === 'text' ? response.content[0].text : '{}'
-  return JSON.parse(text)
+  return JSON.parse(extractJson(text))
 }
